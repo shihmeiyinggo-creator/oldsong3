@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>猜猜我是誰？</title>
+    <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Confetti 特效庫 -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
+        /* 引入 Google Fonts 字型 */
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Noto+Sans+TC:wght@300;400;500&display=swap');
 
         body {
@@ -18,6 +21,7 @@
             font-family: 'Noto Serif TC', serif;
         }
 
+        /* 自定義動畫類別 */
         .fade-enter {
             opacity: 0;
             transform: scale(0.95);
@@ -68,9 +72,11 @@
         <div class="relative w-full aspect-[3/4] overflow-hidden bg-black" id="image-container">
             
             <!-- 圖片 1：年輕 (初始顯示) -->
+            <!-- 使用 onerror 來處理圖片連結失效的情況，顯示預設佔位圖 -->
             <img 
                 id="img-young"
                 src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTs6N7YGM1QbgJTj_PVEu3j9KVHZbUulcM_Og&s" 
+                onerror="this.src='https://placehold.co/400x600/333/FFF?text=Young+Photo'"
                 alt="年輕照片" 
                 class="absolute inset-0 w-full h-full object-cover object-center transition-all duration-700"
             >
@@ -79,6 +85,7 @@
             <img 
                 id="img-current"
                 src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSH2JgNv0_AKsk8EXIu9rcjZ049Hc8DE241tThsr0sgbqZxkYHq28oHRV06_oaEXwbQmb4ySns6n_IaqDx3ZX-sUobOVTCsEKPH0fmv9UZTNw&s=10" 
+                onerror="this.src='https://placehold.co/400x600/333/FFF?text=Current+Photo'"
                 alt="現在照片" 
                 class="absolute inset-0 w-full h-full object-cover object-center opacity-0 transition-all duration-1000 transform scale-110"
             >
@@ -146,8 +153,12 @@
         const title = document.getElementById('game-title');
         const subtitle = document.getElementById('game-subtitle');
 
-        // 音效 (可選，這裡僅用視覺效果)
-        
+        /**
+         * 揭曉答案的函數
+         * 1. 播放特效
+         * 2. 顯示過場文字
+         * 3. 切換圖片
+         */
         function revealAnswer() {
             // 1. 播放彩帶特效
             fireConfetti();
@@ -160,17 +171,18 @@
             step1Controls.style.opacity = '0';
             step1Controls.style.pointerEvents = 'none';
 
-            // 3. 延遲後揭曉現在的照片
+            // 3. 延遲後揭曉現在的照片 (2秒後)
             setTimeout(() => {
                 // 隱藏「答對了」
                 overlay.classList.add('opacity-0');
                 
-                // 圖片轉場
+                // 圖片轉場：舊照片放大消失
                 imgYoung.style.opacity = '0';
-                imgYoung.style.transform = 'scale(1.1)'; // 年輕照片稍微放大消失
+                imgYoung.style.transform = 'scale(1.1)';
                 
+                // 新照片出現
                 imgCurrent.classList.remove('opacity-0');
-                imgCurrent.classList.remove('scale-110'); // 回復正常大小
+                imgCurrent.classList.remove('scale-110');
                 
                 // 標籤切換
                 labelYoung.style.opacity = '0';
@@ -185,7 +197,7 @@
                 
                 // 顯示重置按鈕
                 step2Controls.classList.remove('hidden');
-                // 稍微延遲讓 DOM 渲染後再顯示 opacity
+                // 稍微延遲讓 DOM 渲染後再顯示 opacity，確保淡入效果
                 setTimeout(() => {
                     step2Controls.classList.remove('opacity-0');
                 }, 50);
@@ -193,29 +205,36 @@
                 // 再放一次小彩帶慶祝揭曉
                 fireSmallConfetti();
                 
-            }, 2000); // 2秒後切換圖片
+            }, 2000); 
         }
 
+        /**
+         * 重置遊戲狀態
+         */
         function resetGame() {
-            // 重置所有狀態
+            // 重置圖片狀態
             imgYoung.style.opacity = '1';
             imgYoung.style.transform = 'scale(1)';
             
             imgCurrent.classList.add('opacity-0');
             imgCurrent.classList.add('scale-110');
             
+            // 重置遮罩
             overlay.classList.add('opacity-0');
             message.classList.add('scale-0');
             
+            // 重置標籤
             labelYoung.style.opacity = '1';
             labelYoung.style.transform = 'translateY(0)';
             
             labelCurrent.classList.add('opacity-0');
             labelCurrent.classList.add('translate-y-4');
             
+            // 重置文字
             title.innerText = "猜猜我是誰？";
             subtitle.innerText = "看著這張年輕的照片，你能認出他是誰嗎？";
             
+            // 重置按鈕
             step1Controls.style.opacity = '1';
             step1Controls.style.pointerEvents = 'auto';
             
@@ -225,12 +244,13 @@
             }, 300);
         }
 
-        // 彩帶特效函數
+        // 彩帶特效函數 (使用 canvas-confetti 庫)
         function fireConfetti() {
             var duration = 2000;
             var end = Date.now() + duration;
 
             (function frame() {
+                // 從左側發射
                 confetti({
                     particleCount: 5,
                     angle: 60,
@@ -238,6 +258,7 @@
                     origin: { x: 0 },
                     colors: ['#fbbf24', '#f59e0b', '#ef4444', '#10b981', '#3b82f6']
                 });
+                // 從右側發射
                 confetti({
                     particleCount: 5,
                     angle: 120,
@@ -251,7 +272,7 @@
                 }
             }());
             
-            // 中央爆發
+            // 中央爆發延遲效果
             setTimeout(() => {
                 confetti({
                     particleCount: 100,
